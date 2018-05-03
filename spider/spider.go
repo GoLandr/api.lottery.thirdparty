@@ -56,17 +56,20 @@ func (this *Spider) SpiderCron() {
 		}()
 		//等触发时的信号
 		<-timer.C
-		pj.Cqssc()
+		pj.Pj_SSC("http://www.j0024.com/lottery/getAllCqsscAutoList", "lottery_cqssc", base.CQSSC_TYPE)
+		pj.Pj_SSC("http://www.j0024.com/lottery/getAllXjsscAutoList", "lottery_xjssc", base.XJSSC_TYPE)
 		//		pj.Net_Cqssc()
 		pj.IsFirst = false
 		timer.Stop()
-		log.Println("SSC加载初始化")
-		base.GLotteryMgr.Cqssc.LordInit("lottery_cqssc")
+		logs.Debug("SSC加载初始化")
+		base.GLotteryMgr.Cqssc.LordInit("lottery_cqssc", "重庆时时彩")
+		base.GLotteryMgr.Xjssc.LordInit("lottery_xjssc", "新疆时时彩")
 		//进入第二次执行时间
 		i := 0
 		c := cron.New()
 		c.AddFunc(fmt.Sprint("@every ", 60, "s"), func() {
-			pj.Cqssc()
+			pj.Pj_SSC("http://www.j0024.com/lottery/getAllCqsscAutoList", "lottery_cqssc", base.CQSSC_TYPE)
+			pj.Pj_SSC("http://www.j0024.com/lottery/getAllXjsscAutoList", "lottery_xjssc", base.XJSSC_TYPE)
 			//			pj.Net_Cqssc()
 			i++
 
@@ -114,17 +117,20 @@ func (this *PuJing) Net_Cqssc() error {
 			ssc.Lottery_date = v.Opentime[0:10]
 			ssc.Lottery_time = v.Opentime[11:len(v.Opentime)]
 			//			log.Println(ssc.Lottery_date, "_", ssc.Lottery_time)
-			base.SaveSSC(ssc)
+			//			base.SaveSSC(ssc)
+			SaveLottery(ssc, base.CQSSC_TYPE, base.STATUS_NO, "lottery_cqssc")
 			if !this.IsFirst {
-				base.GLotteryMgr.Cqssc.AddRecord(ssc)
+				//				base.GLotteryMgr.Cqssc.AddRecord(ssc)
+				SaveLottery(ssc, base.CQSSC_TYPE, base.STATUS_YES, "lottery_cqssc")
 			}
 		}
 	}
 	return nil
 }
-func (this *PuJing) Cqssc() error {
-	urlstr := "http://www.j0024.com/lottery/getAllCqsscAutoList"
-	log.Println("url_", urlstr)
+
+//葡京时时彩
+func (this *PuJing) Pj_SSC(urlstr string, tablename string, mode int) error {
+	//	urlstr := "http://www.j0024.com/lottery/getAllCqsscAutoList"
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
 	if err != nil {
@@ -141,7 +147,7 @@ func (this *PuJing) Cqssc() error {
 		fmt.Println("hmlist_2_", hmlist)
 		for k, v := range hmlist {
 			//			fmt.Println("k_", k, "ball_", strings.Split(v, ","))
-			havecount := base.CheckLottery("lottery_cqssc", k)
+			havecount := base.CheckLottery(tablename, k)
 			if havecount == 0 {
 				//保存
 				ssc := model.SSC{}
@@ -155,7 +161,8 @@ func (this *PuJing) Cqssc() error {
 				ssc.Periods = k[8:len(k)]
 				ssc.Update_date = utils.Now()
 				ssc.Lottery_date = k[0:8]
-				base.SaveSSC(ssc)
+				//				base.SaveSSC(ssc)
+				SaveLottery(ssc, mode, base.STATUS_NO, tablename)
 			}
 		}
 		this.IsFirst = false
@@ -174,13 +181,30 @@ func (this *PuJing) Cqssc() error {
 		ssc.Periods = t_flowid[8:len(t_flowid)]
 		ssc.Update_date = utils.Now()
 		ssc.Lottery_date = t_flowid[0:8]
-		havecount := base.CheckLottery("lottery_cqssc", t_flowid)
+		havecount := base.CheckLottery(tablename, t_flowid)
 		if havecount == 0 {
-			base.SaveSSC(ssc)
-			base.GLotteryMgr.Cqssc.AddRecord(ssc)
+			//			base.SaveSSC(ssc)
+			//			base.GLotteryMgr.Cqssc.AddRecord(ssc)
+			SaveLottery(ssc, mode, base.STATUS_YES, tablename)
 		}
 	}
 	return nil
+}
+
+func SaveLottery(lottery interface{}, mode int, loadRecord int, tablename string) {
+	if mode == base.CQSSC_TYPE {
+		ssc := lottery.(model.SSC)
+		base.SaveSSC(tablename, ssc, mode)
+		if loadRecord == base.STATUS_YES {
+			base.GLotteryMgr.Cqssc.AddRecord(ssc)
+		}
+	} else if mode == base.XJSSC_TYPE {
+		ssc := lottery.(model.SSC)
+		base.SaveSSC(tablename, ssc, mode)
+		if loadRecord == base.STATUS_YES {
+			base.GLotteryMgr.Xjssc.AddRecord(ssc)
+		}
+	}
 }
 
 func (this *Lottery) SpiderUrl(url string) error {

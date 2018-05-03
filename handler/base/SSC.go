@@ -1,7 +1,6 @@
 package base
 
 import (
-	"fmt"
 	"log"
 	"mycommon/logs"
 	"mycommon/utils"
@@ -29,13 +28,15 @@ func (a SSCSlice) Less(i, j int) bool { // 重写 Less() 方法， 从小到大�
 }
 
 type SSC struct {
+	Name       string
 	RecordList []*model.SSC
 	Limit      map[int]*model.Limit
 	Stars      map[int]*model.StarsLimt
 }
 
-func (this *SSC) LordInit(tablename string) {
+func (this *SSC) LordInit(tablename string, lotteryName string) {
 	log.Println("SSC_LordInit")
+	this.Name = lotteryName
 	//	if this.RecordMap == nil {
 	//		this.RecordMap = make(map[int]*model.SSC)
 	//	}
@@ -151,14 +152,16 @@ func (this *SSC) BaseStat(ballSize int, record *model.SSC) {
 }
 
 func (this *SSC) Print() {
+	str := this.Name
+	logs.Debug(str)
 	for i := 1; i <= len(this.Limit); i++ {
 		v, _ := this.Limit[i]
-		fmt.Println("第", i, "球:大已开出", v.Big, "期,小已开出",
+		logs.Debug("第", i, "球:大已开出", v.Big, "期,小已开出",
 			v.Small, "期,单已开出", v.Odd, "期,双已开出", v.Even, "期")
 	}
 	for i := 0; i < len(this.Stars); i++ {
 		v, _ := this.Stars[i]
-		fmt.Println("号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次")
+		logs.Debug("号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次")
 	}
 	//	for k, v := range this.Limit {
 	//		fmt.Println("第", k, "球:大已开出", v.Big, "期,小已开出",

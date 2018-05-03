@@ -1,7 +1,6 @@
 package base
 
 import (
-	"log"
 	"mycommon/logs"
 	"mycommon/mathstr"
 	"mycommon/utils"
@@ -10,8 +9,7 @@ import (
 	"api.lottery.thirdparty/model"
 )
 
-func SaveSSC(ssc model.SSC) {
-	log.Println("ssc", mathstr.GetJsonPlainStr(ssc))
+func SaveSSC(tablename string, lottery interface{}, mode int) {
 	defer func() {
 		if e := recover(); e != nil {
 			logs.Error(e)
@@ -19,8 +17,16 @@ func SaveSSC(ssc model.SSC) {
 	}()
 	orm := global.GetNewOrm()
 	defer global.CloseOrm(orm)
-	err := orm.SetTable("lottery_cqssc").SetPK("flowid").InsertModel(ssc)
-	utils.ThrowError(err)
+	if mode == CQSSC_TYPE {
+		ssc := lottery.(model.SSC)
+		err := orm.SetTable(tablename).SetPK("flowid").InsertModel(ssc)
+		utils.ThrowError(err)
+	} else if mode == XJSSC_TYPE {
+		ssc := lottery.(model.SSC)
+		err := orm.SetTable(tablename).SetPK("flowid").InsertModel(ssc)
+		utils.ThrowError(err)
+	}
+
 }
 
 //檢查是否有数据

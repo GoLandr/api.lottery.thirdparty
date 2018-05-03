@@ -3,6 +3,7 @@ package base
 const (
 	CQSSC_TYPE = 1 //重庆时时彩
 	PK_TYPE    = 2 //北京pk
+	XJSSC_TYPE = 1 //新疆时时彩
 )
 
 const (
@@ -17,4 +18,8 @@ const (
 	EIGHT_BALL = 8  //球8
 	NINE_BALL  = 9  //球9
 	TEN_BALL   = 10 //球10
+)
+const (
+	STATUS_YES = 1
+	STATUS_NO  = 0
 )

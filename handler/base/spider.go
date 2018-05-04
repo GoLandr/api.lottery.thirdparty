@@ -19,18 +19,11 @@ import (
 type Lottery struct {
 }
 
-//PJ
-type PuJing struct {
-	Url     string
-	IsFirst bool //是否第一次调用
-}
 type Spider struct {
 }
 
 func (this *Spider) SpiderCron() {
 	InitConfigs()
-	pj := new(PuJing)
-	pj.IsFirst = true
 	timer := time.NewTimer(time.Duration(0) * time.Second)
 	go func() {
 		defer func() {
@@ -54,20 +47,15 @@ func (this *Spider) SpiderCron() {
 		}()
 		//等触发时的信号
 		<-timer.C
-		pj.Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE)
-		pj.Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE)
-		//		pj.Net_Cqssc()
-		pj.IsFirst = false
+		this.LoardSpider(STATUS_YES)
+		//		Official_SSC()
 		timer.Stop()
-		//		logs.Debug("SSC加载初始化")
-		GLotteryMgr.Cqssc.LordInit(T_CQSSC, "CQSSC")
-		GLotteryMgr.Xjssc.LordInit(T_XJSSC, "XJSSC")
+
 		//进入第二次执行时间
 		i := 0
 		c := cron.New()
 		c.AddFunc(fmt.Sprint("@every ", 60, "s"), func() {
-			pj.Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE)
-			pj.Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE)
+			this.LoardSpider(STATUS_NO)
 			//			pj.Net_Cqssc()
 			i++
 
@@ -75,6 +63,15 @@ func (this *Spider) SpiderCron() {
 		c.Start()
 	}()
 
+}
+func (this *Spider) LoardSpider(lordinit int) {
+	Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+	Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+
+	if lordinit == STATUS_YES {
+		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME)
+		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME)
+	}
 }
 
 type SSCModel struct {
@@ -84,8 +81,7 @@ type SSCModel struct {
 	Opentimestamp int    `json:"opentimestamp"`
 }
 
-func (this *PuJing) Net_Cqssc() error {
-	urlstr := "http://f.apiplus.net/cqssc-20.json"
+func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
 	if err != nil {
@@ -115,11 +111,9 @@ func (this *PuJing) Net_Cqssc() error {
 			ssc.Lottery_date = v.Opentime[0:10]
 			ssc.Lottery_time = v.Opentime[11:len(v.Opentime)]
 			//			log.Println(ssc.Lottery_date, "_", ssc.Lottery_time)
-			//			SaveSSC(ssc)
-			SaveLottery(ssc, CQSSC_TYPE, STATUS_NO, "lottery_cqssc")
-			if !this.IsFirst {
-				//				GLotteryMgr.Cqssc.AddRecord(ssc)
-				SaveLottery(ssc, CQSSC_TYPE, STATUS_YES, "lottery_cqssc")
+			SaveLottery(ssc, mode, STATUS_NO, tablename)
+			if lordinit == STATUS_YES {
+				SaveLottery(ssc, mode, STATUS_YES, tablename)
 			}
 		}
 	}
@@ -127,7 +121,7 @@ func (this *PuJing) Net_Cqssc() error {
 }
 
 //PJSSC
-func (this *PuJing) Pj_SSC(urlstr string, tablename string, mode int) error {
+func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
 	if err != nil {
@@ -136,7 +130,8 @@ func (this *PuJing) Pj_SSC(urlstr string, tablename string, mode int) error {
 	var redata map[string]interface{}
 	mathstr.JsonUnmarsh(result, &redata)
 	fmt.Println(redata)
-	if this.IsFirst {
+	//	fmt.Println("hmlist_", mathstr.GetJsonPlainStr(redata["hmlist"]))
+	if lordinit == STATUS_YES {
 		//查看历史记录是否保存
 		var hmlist map[string]string
 		mathstr.JsonUnmarsh(mathstr.GetJsonPlainStr(redata["hmlist"]), &hmlist)
@@ -161,7 +156,6 @@ func (this *PuJing) Pj_SSC(urlstr string, tablename string, mode int) error {
 				SaveLottery(ssc, mode, STATUS_NO, tablename)
 			}
 		}
-		this.IsFirst = false
 	} else {
 		//最新记录
 		ssc := model.SSC{}

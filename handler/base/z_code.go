@@ -28,6 +28,14 @@ const (
 	PJ_XJSSC = "http://www.j0024.com/lottery/getAllXjsscAutoList"
 )
 const (
+	OFFICIAL_CQSSC = "http://f.apiplus.net/cqssc-20.json"
+	OFFICIAL_XJSSC = "http://www.j0024.com/lottery/getAllXjsscAutoList"
+)
+const (
 	T_CQSSC = "lottery_cqssc"
 	T_XJSSC = "lottery_xjssc"
+)
+const (
+	CQSSC_NAME = "重庆时时彩"
+	XJSSC_NAME = "新疆时时彩"
 )

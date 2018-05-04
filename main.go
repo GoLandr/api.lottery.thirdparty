@@ -10,12 +10,12 @@ import (
 	"net/http"
 
 	"api.lottery.thirdparty/config"
-	"api.lottery.thirdparty/spider"
+	"api.lottery.thirdparty/handler/base"
 	"api.lottery.thirdparty/webhandler"
 	//	_ "net/http/pprof"
 )
 
-const current_version = "0.2.19"
+const current_version = "0.0.00"
 
 func main() {
 
@@ -47,6 +47,6 @@ func ppmem() {
 }
 func init() {
 	log.Println("spider_init_____")
-	spider := new(spider.Spider)
+	spider := new(base.Spider)
 	spider.SpiderCron()
 }

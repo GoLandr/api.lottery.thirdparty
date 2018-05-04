@@ -23,3 +23,11 @@ const (
 	STATUS_YES = 1
 	STATUS_NO  = 0
 )
+const (
+	PJ_CQSSC = "http://www.j0024.com/lottery/getAllCqsscAutoList"
+	PJ_XJSSC = "http://www.j0024.com/lottery/getAllXjsscAutoList"
+)
+const (
+	T_CQSSC = "lottery_cqssc"
+	T_XJSSC = "lottery_xjssc"
+)

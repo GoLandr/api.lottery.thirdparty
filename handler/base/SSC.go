@@ -1,14 +1,13 @@
 package base
 
 import (
+	"fmt"
 	"log"
 	"mycommon/logs"
 	"mycommon/utils"
 	"sort"
 
 	"api.lottery.thirdparty/global"
-
-	"mycommon/mathstr"
 
 	"api.lottery.thirdparty/model"
 	lotteryutils "api.lottery.thirdparty/utils"
@@ -56,7 +55,7 @@ func (this *SSC) LordInit(tablename string, lotteryName string) {
 	}
 	//排序
 	sort.Sort(SSCSlice(this.RecordList))
-	log.Println("sort_", mathstr.GetJsonPlainStr(this.RecordList))
+	//	log.Println("sort_", mathstr.GetJsonPlainStr(this.RecordList))
 	for _, v := range this.RecordList {
 		this.BaseStat(5, v)
 		this.StarsStat(10, v)
@@ -152,22 +151,17 @@ func (this *SSC) BaseStat(ballSize int, record *model.SSC) {
 }
 
 func (this *SSC) Print() {
-	str := this.Name
-	logs.Debug(str)
+	str := fmt.Sprint(this.Name, "\n")
+
 	for i := 1; i <= len(this.Limit); i++ {
 		v, _ := this.Limit[i]
-		logs.Debug("第", i, "球:大已开出", v.Big, "期,小已开出",
-			v.Small, "期,单已开出", v.Odd, "期,双已开出", v.Even, "期")
+		str = fmt.Sprint(str, "第", i, "球:大已开出", v.Big, "期,小已开出",
+			v.Small, "期,单已开出", v.Odd, "期,双已开出", v.Even, "期", "\n")
 	}
+
 	for i := 0; i < len(this.Stars); i++ {
 		v, _ := this.Stars[i]
-		logs.Debug("号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次")
+		str = fmt.Sprint(str, "号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次", "\n")
 	}
-	//	for k, v := range this.Limit {
-	//		fmt.Println("第", k, "球:大已开出", v.Big, "期,小已开出",
-	//			v.Small, "期,单已开出", v.Odd, "期,双已开出", v.Even, "期")
-	//	}
-	//	for k, v := range this.Stars {
-	//		fmt.Println("号码", k, "未出次数", v.No, "次 已出次数", v.Open, "次")
-	//	}
+	logs.Debug(str)
 }

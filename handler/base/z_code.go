@@ -39,3 +39,8 @@ const (
 	CQSSC_NAME = "重庆时时彩"
 	XJSSC_NAME = "新疆时时彩"
 )
+const (
+	SSC_SPLIT       = 5  //大小分界线
+	SSC_TOTAL_SPLIT = 23 //总和大小分界线
+	BJKL8_SPLIT     = 6  //大小分界线
+)

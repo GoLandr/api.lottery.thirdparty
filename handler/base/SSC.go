@@ -27,10 +27,12 @@ func (a SSCSlice) Less(i, j int) bool { // 重写 Less() 方法， 从小到大�
 }
 
 type SSC struct {
-	Name       string
-	RecordList []*model.SSC
-	Limit      map[int]*model.Limit
-	Stars      map[int]*model.StarsLimt
+	Name        string
+	RecordList  []*model.SSC
+	Limit       map[int]*model.Limit
+	Total_Limit model.Limit //总和
+	Stars       map[int]*model.StarsLimt
+	Pred_Limit  model.PredLimt
 }
 
 func (this *SSC) LordInit(tablename string, lotteryName string) {
@@ -117,22 +119,24 @@ func (this *SSC) BaseStat(ballSize int, record *model.SSC) {
 		small := 0
 		odd := 0
 		even := 0
+
 		if k == ONE_BALL {
-			big, small = lotteryutils.GetBigSmall(record.One_ball, 5)
+			big, small = lotteryutils.GetBigSmall(record.One_ball, SSC_SPLIT)
 			odd, even = lotteryutils.GetOddEven(record.One_ball)
 		} else if k == TWO_BALL {
-			big, small = lotteryutils.GetBigSmall(record.Two_ball, 5)
+			big, small = lotteryutils.GetBigSmall(record.Two_ball, SSC_SPLIT)
 			odd, even = lotteryutils.GetOddEven(record.Two_ball)
 		} else if k == THRID_BALL {
-			big, small = lotteryutils.GetBigSmall(record.Third_ball, 5)
+			big, small = lotteryutils.GetBigSmall(record.Third_ball, SSC_SPLIT)
 			odd, even = lotteryutils.GetOddEven(record.Third_ball)
 		} else if k == FOUR_BALL {
-			big, small = lotteryutils.GetBigSmall(record.Four_ball, 5)
+			big, small = lotteryutils.GetBigSmall(record.Four_ball, SSC_SPLIT)
 			odd, even = lotteryutils.GetOddEven(record.Four_ball)
 		} else if k == FIVE_BALL {
-			big, small = lotteryutils.GetBigSmall(record.Five_ball, 5)
+			big, small = lotteryutils.GetBigSmall(record.Five_ball, SSC_SPLIT)
 			odd, even = lotteryutils.GetOddEven(record.Five_ball)
 		}
+
 		if big == 1 {
 			v.Big += big
 			v.Small = 0
@@ -148,6 +152,41 @@ func (this *SSC) BaseStat(ballSize int, record *model.SSC) {
 			v.Odd = 0
 		}
 	}
+	//计算总和
+	total_small := 0
+	total_odd := 0
+	total_even := 0
+	total_big := 0
+	total_odd, total_even, total_big, total_small = lotteryutils.GetTotalStat(this.recordToArray(record), SSC_TOTAL_SPLIT)
+	if total_big == 1 {
+		this.Total_Limit.Big += total_big
+		this.Total_Limit.Small = 0
+	} else {
+		this.Total_Limit.Big = 0
+		this.Total_Limit.Small += total_small
+	}
+	if total_odd == 1 {
+		this.Total_Limit.Odd += total_odd
+		this.Total_Limit.Even = 0
+	} else {
+		this.Total_Limit.Even += total_even
+		this.Total_Limit.Odd = 0
+	}
+	//计算龙虎
+	dragon, tiger, draw := lotteryutils.GetPredStat(record.One_ball, record.Five_ball)
+	this.Pred_Limit.Dragon += dragon
+	this.Pred_Limit.Tiger += tiger
+	this.Pred_Limit.Draw += draw
+}
+
+func (this *SSC) recordToArray(record *model.SSC) []int {
+	var array []int
+	array = append(array, record.One_ball)
+	array = append(array, record.Two_ball)
+	array = append(array, record.Third_ball)
+	array = append(array, record.Four_ball)
+	array = append(array, record.Five_ball)
+	return array
 }
 
 func (this *SSC) Print() {
@@ -158,7 +197,9 @@ func (this *SSC) Print() {
 		str = fmt.Sprint(str, "第", i, "球:大已开出", v.Big, "期,小已开出",
 			v.Small, "期,单已开出", v.Odd, "期,双已开出", v.Even, "期", "\n")
 	}
-
+	str = fmt.Sprint(str, "总和大已开出", this.Total_Limit.Big, "期，总和小已开出", this.Total_Limit.Small, "期\n")
+	str = fmt.Sprint(str, "总和单已开出", this.Total_Limit.Odd, "期，总和双已开出", this.Total_Limit.Even, "期\n")
+	str = fmt.Sprint(str, "龙已开出", this.Pred_Limit.Dragon, "期，虎已开出", this.Pred_Limit.Tiger, "期，和已开出", this.Pred_Limit.Draw, "期\n")
 	for i := 0; i < len(this.Stars); i++ {
 		v, _ := this.Stars[i]
 		str = fmt.Sprint(str, "号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次", "\n")

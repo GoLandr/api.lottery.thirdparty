@@ -33,11 +33,13 @@ type SSC struct {
 	Total_Limit model.Limit //总和
 	Stars       map[int]*model.StarsLimt
 	Pred_Limit  model.PredLimt
+	Mode        int //类型
 }
 
-func (this *SSC) LordInit(tablename string, lotteryName string) {
+func (this *SSC) LordInit(tablename string, lotteryName string, mode int) {
 	log.Println("SSC_LordInit")
 	this.Name = lotteryName
+	this.Mode = mode
 	//	if this.RecordMap == nil {
 	//		this.RecordMap = make(map[int]*model.SSC)
 	//	}
@@ -173,18 +175,11 @@ func (this *SSC) BaseStat(ballSize int, record *model.SSC) {
 		this.Total_Limit.Odd = 0
 	}
 	//计算龙虎
-<<<<<<< HEAD
 	dragon, tiger, draw := lotteryutils.GetPredStat(record.One_ball, record.Five_ball,
 		this.Pred_Limit.Dragon, this.Pred_Limit.Tiger, this.Pred_Limit.Draw)
 	this.Pred_Limit.Dragon = dragon
 	this.Pred_Limit.Tiger = tiger
 	this.Pred_Limit.Draw = draw
-=======
-	dragon, tiger, draw := lotteryutils.GetPredStat(record.One_ball, record.Five_ball)
-	this.Pred_Limit.Dragon += dragon
-	this.Pred_Limit.Tiger += tiger
-	this.Pred_Limit.Draw += draw
->>>>>>> b6eeabb9b54fcfa874437e60fad7fc81d652b579
 }
 
 func (this *SSC) recordToArray(record *model.SSC) []int {
@@ -213,4 +208,19 @@ func (this *SSC) Print() {
 		str = fmt.Sprint(str, "号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次", "\n")
 	}
 	logs.Debug(str)
+}
+func (this *SSC) pushMsg() {
+	BSlimit, ok := GBigSmallLimit[this.Mode]
+	//	OElimit, ok := GOddEvenLimit[this.Mode]
+	//	starlimit, ok := GStarsLimit[this.Mode]
+	//	totallimit, ok := GTotalLimit[this.Mode]
+	//	predlimit, ok := GPredLimit[this.Mode]
+	if ok {
+		for i := 1; i <= len(this.Limit); i++ {
+			v, _ := this.Limit[i]
+			maxVal := lotteryutils.GetMaxValue(v.Big, v.Small)
+			retLst := GetPushMenber(BSlimit, maxVal)
+		}
+	}
+
 }

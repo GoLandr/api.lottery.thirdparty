@@ -12,8 +12,12 @@ import (
 
 var GLotteryMgr *LotteryMgr //全局变量
 var GMenber map[int]*model.Menber
-var GLimit map[int][]*model.TLimit
-var GOddEvenLimit map[int]map[int][]*model.TLimit
+var GLimit map[int][]*model.TLimit                 //k->mode
+var GOddEvenLimit map[int]map[int][]*model.TLimit  //单双 k->mode ->odd_even
+var GBigSmallLimit map[int]map[int][]*model.TLimit //大小 k->mode ->big_small
+var GTotalLimit map[int]map[int][]*model.TLimit    //总和 k->mode ->total
+var GStarsLimit map[int]map[int][]*model.TLimit    //五星 k->mode ->star
+var GPredLimit map[int]map[int][]*model.TLimit     //龙虎 k->mode ->pred
 
 func InitConfigs() {
 	if GLotteryMgr == nil {
@@ -60,12 +64,29 @@ func InitLimit() {
 	}
 	logs.Debug("GLimit_", mathstr.GetJsonPlainStr(GLimit))
 	GOddEvenLimit = make(map[int]map[int][]*model.TLimit)
+	GBigSmallLimit = make(map[int]map[int][]*model.TLimit)
+	GTotalLimit = make(map[int]map[int][]*model.TLimit)
+	GStarsLimit = make(map[int]map[int][]*model.TLimit)
+	GPredLimit = make(map[int]map[int][]*model.TLimit)
 	for k, v := range GLimit {
 		oddEvenLst := make(map[int][]*model.TLimit)
+		bigSmallLst := make(map[int][]*model.TLimit)
+		totalLst := make(map[int][]*model.TLimit)
+		starsLst := make(map[int][]*model.TLimit)
+		predLst := make(map[int][]*model.TLimit)
 		for _, entry := range v {
 			oddEvenLst[entry.Odd_even_limit] = append(oddEvenLst[entry.Odd_even_limit], entry)
+			bigSmallLst[entry.Big_small_limit] = append(bigSmallLst[entry.Big_small_limit], entry)
+			totalLst[entry.Total_limit] = append(totalLst[entry.Total_limit], entry)
+			starsLst[entry.Star_limit] = append(starsLst[entry.Star_limit], entry)
+			predLst[entry.Pred_limit] = append(predLst[entry.Pred_limit], entry)
+
 		}
 		GOddEvenLimit[k] = oddEvenLst
+		GBigSmallLimit[k] = bigSmallLst
+		GTotalLimit[k] = totalLst
+		GStarsLimit[k] = starsLst
+		GPredLimit[k] = predLst
 	}
 	logs.Debug("GOddEvenLimit_", mathstr.GetJsonPlainStr(GOddEvenLimit))
 }

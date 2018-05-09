@@ -2,8 +2,8 @@ package base
 
 const (
 	CQSSC_TYPE = 1 //重庆时时彩
-	PK_TYPE    = 2 //北京pk
-	XJSSC_TYPE = 1 //新疆时时彩
+	XJSSC_TYPE = 2 //新疆时时彩
+	PK_TYPE    = 3 //北京pk
 )
 
 const (
@@ -43,4 +43,12 @@ const (
 	SSC_SPLIT       = 5  //大小分界线
 	SSC_TOTAL_SPLIT = 23 //总和大小分界线
 	BJKL8_SPLIT     = 6  //大小分界线
+)
+
+const (
+	BIG_SMALL_TYPE = 1
+	ODD_EVEN_TYP   = 2
+	TOTAL_TYP      = 3
+	STAR_TYP       = 4
+	PRED_TYP       = 5
 )

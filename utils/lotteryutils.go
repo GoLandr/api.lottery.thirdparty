@@ -45,7 +45,6 @@ func GetTotalStat(ball []int, split int) (int, int, int, int) {
 }
 
 //龙虎统计
-<<<<<<< HEAD
 func GetPredStat(first_ball int, second_ball int, dragon int, tiger int, draw int) (int, int, int) {
 
 	if first_ball > second_ball {
@@ -60,18 +59,14 @@ func GetPredStat(first_ball int, second_ball int, dragon int, tiger int, draw in
 		draw += 1
 		tiger = 0
 		dragon = 0
-=======
-func GetPredStat(first_ball int, second_ball int) (int, int, int) {
-	dragon := 0
-	tiger := 0
-	draw := 0
-	if first_ball > second_ball {
-		tiger += 1
-	} else if first_ball < second_ball {
-		dragon += 1
-	} else {
-		draw += 1
->>>>>>> b6eeabb9b54fcfa874437e60fad7fc81d652b579
 	}
 	return dragon, tiger, draw
+}
+
+func GetMaxValue(firstVal int, secondVal int) int {
+	if firstVal > secondVal {
+		return firstVal
+	} else {
+		return secondVal
+	}
 }

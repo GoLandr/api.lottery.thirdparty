@@ -70,8 +70,8 @@ func (this *Spider) LoardSpider(lordinit int) {
 	Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
 	Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
 	if lordinit == STATUS_YES {
-		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME)
-		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME)
+		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME,CQSSC_TYPE)
+		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME,XJSSC_TYPE)
 	}
 }
 
@@ -113,9 +113,10 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 			ssc.Lottery_date = v.Opentime[0:10]
 			ssc.Lottery_time = v.Opentime[11:len(v.Opentime)]
 			//			log.Println(ssc.Lottery_date, "_", ssc.Lottery_time)
-			SaveLottery(ssc, mode, STATUS_NO, tablename)
 			if lordinit == STATUS_YES {
 				SaveLottery(ssc, mode, STATUS_YES, tablename)
+			}else{
+				SaveLottery(ssc, mode, STATUS_NO, tablename)
 			}
 		}
 	}

@@ -65,9 +65,10 @@ func (this *Spider) SpiderCron() {
 
 }
 func (this *Spider) LoardSpider(lordinit int) {
-	Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
-	Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
-
+	//Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+	//Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+	Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+	Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
 	if lordinit == STATUS_YES {
 		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME)
 		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME)
@@ -82,6 +83,7 @@ type SSCModel struct {
 }
 
 func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error {
+
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
 	if err != nil {
@@ -94,7 +96,7 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 	mathstr.JsonUnmarsh(mathstr.GetJsonPlainStr(redata["data"]), &hmlist)
 	//	fmt.Println("hmlist_2_", hmlist)
 	for _, v := range hmlist {
-		havecount := CheckLottery("lottery_cqssc", v.Expect)
+		havecount := CheckLottery(tablename, v.Expect)
 		if havecount == 0 {
 			log.Println("save_Expect", v.Expect, "_time_", v.Opentime)
 			//保存
@@ -122,6 +124,9 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 
 //PJSSC
 func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
+	defer func() {
+		logs.Debug("dddddddddddddddddddddddddd")
+	}()
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
 	if err != nil {
@@ -176,6 +181,76 @@ func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 			//			SaveSSC(ssc)
 			//			GLotteryMgr.Cqssc.AddRecord(ssc)
 			SaveLottery(ssc, mode, STATUS_YES, tablename)
+		}
+	}
+	return nil
+}
+
+func Pj_BJPK(urlstr string, tablename string, mode int, lordinit int) error {
+	param := make(url.Values)
+	result, err := common.Httppost(urlstr, param)
+	if err != nil {
+		return err
+	}
+	var redata map[string]interface{}
+	mathstr.JsonUnmarsh(result, &redata)
+	fmt.Println(redata)
+	//	fmt.Println("hmlist_", mathstr.GetJsonPlainStr(redata["hmlist"]))
+	if lordinit == STATUS_YES {
+		//查看历史记录是否保存
+		var hmlist map[string]string
+		mathstr.JsonUnmarsh(mathstr.GetJsonPlainStr(redata["hmlist"]), &hmlist)
+		fmt.Println("hmlist_2_", hmlist)
+		for k, v := range hmlist {
+			//			fmt.Println("k_", k, "ball_", strings.Split(v, ","))
+			havecount := CheckLottery(tablename, k)
+			if havecount == 0 {
+				v = strings.Replace(v, "<br>", ",", 1)
+				logs.Debug("v_", v)
+				//保存
+				bjpk := model.BJPK{}
+				bjpk.Flowid = mathstr.Math2intDefault0(k)
+				ball := strings.Split(v, ",")
+				bjpk.One_ball = mathstr.Math2intDefault0(ball[0])
+				bjpk.Two_ball = mathstr.Math2intDefault0(ball[1])
+				bjpk.Third_ball = mathstr.Math2intDefault0(ball[2])
+				bjpk.Four_ball = mathstr.Math2intDefault0(ball[3])
+				bjpk.Five_ball = mathstr.Math2intDefault0(ball[4])
+				bjpk.Six_ball = mathstr.Math2intDefault0(ball[5])
+				bjpk.Seven_ball = mathstr.Math2intDefault0(ball[6])
+				bjpk.Eight_ball = mathstr.Math2intDefault0(ball[7])
+				bjpk.Ninth_ball = mathstr.Math2intDefault0(ball[8])
+				bjpk.Ten_ball = mathstr.Math2intDefault0(ball[9])
+				bjpk.Periods = k
+				bjpk.Update_date = utils.Now()
+				//				ssc.Lottery_date = k[0:8]
+				//				SaveSSC(ssc)
+				SaveLottery(bjpk, mode, STATUS_NO, tablename)
+			}
+		}
+	} else {
+		//最新记录
+		bjpk := model.BJPK{}
+		bjpk.Flowid = mathstr.Math2intDefault0(redata["numbers"])
+		var ball []string
+		mathstr.JsonUnmarsh(fmt.Sprint(mathstr.GetJsonPlainStr(redata["hm"])), &ball)
+		bjpk.One_ball = mathstr.Math2intDefault0(ball[0])
+		bjpk.Third_ball = mathstr.Math2intDefault0(ball[2])
+		bjpk.Four_ball = mathstr.Math2intDefault0(ball[3])
+		bjpk.Five_ball = mathstr.Math2intDefault0(ball[4])
+		bjpk.Six_ball = mathstr.Math2intDefault0(ball[5])
+		bjpk.Seven_ball = mathstr.Math2intDefault0(ball[6])
+		bjpk.Eight_ball = mathstr.Math2intDefault0(ball[7])
+		bjpk.Ninth_ball = mathstr.Math2intDefault0(ball[8])
+		bjpk.Ten_ball = mathstr.Math2intDefault0(ball[9])
+		bjpk.Periods = fmt.Sprint(redata["numbers"])
+		bjpk.Update_date = utils.Now()
+		//		ssc.Lottery_date = t_flowid[0:8]
+		havecount := CheckLottery(tablename, bjpk.Periods)
+		if havecount == 0 {
+			//			SaveSSC(ssc)
+			//			GLotteryMgr.Cqssc.AddRecord(ssc)
+			SaveLottery(bjpk, mode, STATUS_YES, tablename)
 		}
 	}
 	return nil

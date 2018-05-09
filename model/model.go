@@ -21,6 +21,13 @@ type StarsLimt struct {
 	No   int //未开
 }
 
+//龙虎极限
+type PredLimt struct {
+	Dragon int //龙
+	Tiger  int //虎
+	Draw   int //和
+}
+
 type FlagObj struct {
 	Flag int         `json:"flag"`
 	Msg  string      `json:"msg"`

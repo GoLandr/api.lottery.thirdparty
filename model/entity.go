@@ -8,7 +8,7 @@ type Menber struct {
 	Code  int    `sql:"code" json:"code"`
 }
 type TLimit struct {
-	id              int    `sql:"id" json:"id"`
+	Id              int    `sql:"id" json:"id"`
 	Menber_id       int    `sql:"menber_id" json:"menber_id"`
 	Mode            int    `sql:"mode" json:"mode"`
 	Nickname        string `sql:"nickname" json:"nickname"`
@@ -19,6 +19,7 @@ type TLimit struct {
 	Pred_limit      int    `sql:"pred_limit" json:"pred_limit"`
 	Is_valid        int    `sql:"is_valid" json:"is_valid"`
 	Valid_date      string `sql:"valid_date" json:"valid_date"`
+	Phone           string `sql:"Phone" json:"phone"`
 }
 
 type BJPK struct {

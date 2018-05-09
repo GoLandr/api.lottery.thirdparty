@@ -173,11 +173,18 @@ func (this *SSC) BaseStat(ballSize int, record *model.SSC) {
 		this.Total_Limit.Odd = 0
 	}
 	//计算龙虎
+<<<<<<< HEAD
 	dragon, tiger, draw := lotteryutils.GetPredStat(record.One_ball, record.Five_ball,
 		this.Pred_Limit.Dragon, this.Pred_Limit.Tiger, this.Pred_Limit.Draw)
 	this.Pred_Limit.Dragon = dragon
 	this.Pred_Limit.Tiger = tiger
 	this.Pred_Limit.Draw = draw
+=======
+	dragon, tiger, draw := lotteryutils.GetPredStat(record.One_ball, record.Five_ball)
+	this.Pred_Limit.Dragon += dragon
+	this.Pred_Limit.Tiger += tiger
+	this.Pred_Limit.Draw += draw
+>>>>>>> b6eeabb9b54fcfa874437e60fad7fc81d652b579
 }
 
 func (this *SSC) recordToArray(record *model.SSC) []int {

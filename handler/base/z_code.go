@@ -10,6 +10,7 @@ const (
 	CQSSC_TYPE = 1 //重庆时时彩
 	XJSSC_TYPE = 2 //新疆时时彩
 	PK_TYPE    = 3 //北京pk
+	TJSSC_TYPE = 4 //天津时时彩
 )
 
 const (
@@ -32,18 +33,22 @@ const (
 const (
 	PJ_CQSSC = "http://www.j0024.com/lottery/getAllCqsscAutoList"
 	PJ_XJSSC = "http://www.j0024.com/lottery/getAllXjsscAutoList"
+	TJ_XJSSC = "http://www.j0024.com/lottery/getAllTjsscAutoList"
 )
 const (
 	OFFICIAL_CQSSC = "http://f.apiplus.net/cqssc-20.json"
 	OFFICIAL_XJSSC = "http://f.apiplus.net/xjssc-20.json"
+	OFFICIAL_TJSSC = "http://f.apiplus.net/tjssc-20.json"
 )
 const (
 	T_CQSSC = "lottery_cqssc"
 	T_XJSSC = "lottery_xjssc"
+	T_TJSSC = "lottery_tjssc"
 )
 const (
 	CQSSC_NAME = "重庆时时彩"
 	XJSSC_NAME = "新疆时时彩"
+	TJSSC_NAME = "天津时时彩"
 )
 const (
 	SSC_SPLIT       = 5  //大小分界线
@@ -66,4 +71,6 @@ const (
 	CQSSC_END_TIME   = "02:00"
 	XJSSC_START_TIME = "09:00"
 	XJSSC_END_TIME   = "02:00"
+	TJSSC_START_TIME = "09:00"
+	TJSSC_END_TIME   = "02:00"
 )

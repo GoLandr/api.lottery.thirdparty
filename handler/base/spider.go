@@ -16,14 +16,12 @@ import (
 	"github.com/robfig/cron"
 )
 
-type Lottery struct {
-}
-
 type Spider struct {
 }
 
 func (this *Spider) SpiderCron() {
 	InitConfigs()
+	LoardAPI()
 	timer := time.NewTimer(time.Duration(0) * time.Second)
 	go func() {
 		defer func() {
@@ -48,7 +46,6 @@ func (this *Spider) SpiderCron() {
 		//等触发时的信号
 		<-timer.C
 		this.LoardSpider(STATUS_YES)
-		//		Official_SSC()
 		timer.Stop()
 
 		//进入第二次执行时间
@@ -65,13 +62,23 @@ func (this *Spider) SpiderCron() {
 
 }
 func (this *Spider) LoardSpider(lordinit int) {
-	//Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
-	//Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
-	Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
-	Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+	if GLotteryAPI.CQSSC.Mode == CQSSC_API_PJ {
+		Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+		//		logs.Debug("LoardSpider_err", mathstr.GetJsonStr(err))
+	} else if GLotteryAPI.CQSSC.Mode == CQSSC_API_OFFICIAL {
+		Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+	}
+	//	logs.Debug("XJSSC", mathstr.GetJsonStr(GLotteryAPI.XJSSC))
+	if GLotteryAPI.XJSSC.Mode == XJSSC_API_PJ {
+		//		logs.Debug("XJSSC")
+		Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+	} else if GLotteryAPI.XJSSC.Mode == XJSSC_API_OFFICIAL {
+		Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+	}
+
 	if lordinit == STATUS_YES {
-		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME,CQSSC_TYPE)
-		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME,XJSSC_TYPE)
+		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME, CQSSC_TYPE)
+		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME, XJSSC_TYPE)
 	}
 }
 
@@ -83,7 +90,15 @@ type SSCModel struct {
 }
 
 func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error {
+	log.Println("visit Official_SSC")
+	defer func() {
+		if e := recover(); e != nil {
+			logs.Debug("Fail to collect and replace the source")
+			ChangeLotteryAPI(mode)
+			logs.Error(e)
+		}
 
+	}()
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
 	if err != nil {
@@ -98,7 +113,7 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 	for _, v := range hmlist {
 		havecount := CheckLottery(tablename, v.Expect)
 		if havecount == 0 {
-			log.Println("save_Expect", v.Expect, "_time_", v.Opentime)
+			log.Println("save_", tablename, "_Expect", v.Expect, "_time_", v.Opentime)
 			//保存
 			ssc := model.SSC{}
 			ssc.Flowid = mathstr.Math2intDefault0(v.Expect)
@@ -114,9 +129,9 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 			ssc.Lottery_time = v.Opentime[11:len(v.Opentime)]
 			//			log.Println(ssc.Lottery_date, "_", ssc.Lottery_time)
 			if lordinit == STATUS_YES {
-				SaveLottery(ssc, mode, STATUS_YES, tablename)
-			}else{
 				SaveLottery(ssc, mode, STATUS_NO, tablename)
+			} else {
+				SaveLottery(ssc, mode, STATUS_YES, tablename)
 			}
 		}
 	}
@@ -125,8 +140,15 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 
 //PJSSC
 func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
+	//	log.Println("visit Pj_SSC_mode", mode, "_", tablename)
 	defer func() {
-		logs.Debug("dddddddddddddddddddddddddd")
+		logs.Debug("visit defer")
+		if e := recover(); e != nil {
+			logs.Debug("Fail to collect and replace the source")
+			ChangeLotteryAPI(mode)
+			logs.Error(e)
+		}
+
 	}()
 	param := make(url.Values)
 	result, err := common.Httppost(urlstr, param)
@@ -135,16 +157,17 @@ func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 	}
 	var redata map[string]interface{}
 	mathstr.JsonUnmarsh(result, &redata)
-	fmt.Println(redata)
+	//	fmt.Println(redata)
 	//	fmt.Println("hmlist_", mathstr.GetJsonPlainStr(redata["hmlist"]))
 	if lordinit == STATUS_YES {
 		//查看历史记录是否保存
 		var hmlist map[string]string
 		mathstr.JsonUnmarsh(mathstr.GetJsonPlainStr(redata["hmlist"]), &hmlist)
-		fmt.Println("hmlist_2_", hmlist)
+		//		fmt.Println("hmlist_2_", hmlist)
 		for k, v := range hmlist {
 			//			fmt.Println("k_", k, "ball_", strings.Split(v, ","))
 			havecount := CheckLottery(tablename, k)
+			//			logs.Debug("havecount_", havecount)
 			if havecount == 0 {
 				//保存
 				ssc := model.SSC{}
@@ -159,6 +182,7 @@ func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 				ssc.Update_date = utils.Now()
 				ssc.Lottery_date = k[0:8]
 				//				SaveSSC(ssc)
+				//				logs.Debug("ssc_", ssc)
 				SaveLottery(ssc, mode, STATUS_NO, tablename)
 			}
 		}
@@ -179,6 +203,7 @@ func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 		ssc.Lottery_date = t_flowid[0:8]
 		havecount := CheckLottery(tablename, t_flowid)
 		if havecount == 0 {
+			log.Println("save_", tablename, "_Expect", ssc.Flowid)
 			//			SaveSSC(ssc)
 			//			GLotteryMgr.Cqssc.AddRecord(ssc)
 			SaveLottery(ssc, mode, STATUS_YES, tablename)
@@ -265,6 +290,7 @@ func SaveLottery(lottery interface{}, mode int, loadRecord int, tablename string
 			GLotteryMgr.Cqssc.AddRecord(ssc)
 		}
 	} else if mode == XJSSC_TYPE {
+		logs.Debug("save_xj")
 		ssc := lottery.(model.SSC)
 		SaveSSC(tablename, ssc, mode)
 		if loadRecord == STATUS_YES {

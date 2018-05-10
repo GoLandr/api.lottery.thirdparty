@@ -63,10 +63,12 @@ func GetPredStat(first_ball int, second_ball int, dragon int, tiger int, draw in
 	return dragon, tiger, draw
 }
 
-func GetMaxValue(firstVal int, secondVal int) int {
-	if firstVal > secondVal {
-		return firstVal
-	} else {
-		return secondVal
+func GetMaxValue(retVal ...int) int {
+	maxVal := 0
+	for _, v := range retVal {
+		if v > maxVal {
+			maxVal = v
+		}
 	}
+	return maxVal
 }

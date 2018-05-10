@@ -1,6 +1,12 @@
 package base
 
 const (
+	CQSSC_API_PJ       = 1
+	CQSSC_API_OFFICIAL = 2
+	XJSSC_API_PJ       = 1
+	XJSSC_API_OFFICIAL = 2
+)
+const (
 	CQSSC_TYPE = 1 //重庆时时彩
 	XJSSC_TYPE = 2 //新疆时时彩
 	PK_TYPE    = 3 //北京pk
@@ -51,4 +57,13 @@ const (
 	TOTAL_TYP      = 3
 	STAR_TYP       = 4
 	PRED_TYP       = 5
+)
+const (
+	SEND_MSG_TO_FRIEND_URL = "http://localhost:8080/sendMsgToFr"
+)
+const (
+	CQSSC_START_TIME = "09:00"
+	CQSSC_END_TIME   = "02:00"
+	XJSSC_START_TIME = "09:00"
+	XJSSC_END_TIME   = "02:00"
 )

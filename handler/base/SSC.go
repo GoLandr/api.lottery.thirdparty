@@ -64,15 +64,20 @@ func (this *SSC) LordInit(tablename string, lotteryName string, mode int) {
 		this.BaseStat(5, v)
 		this.StarsStat(10, v)
 	}
-	this.Print()
+	//	this.Print()
+	this.pushMsg()
 }
 
 //添加记录
 func (this *SSC) AddRecord(record model.SSC) {
+	if len(this.RecordList) > 10000 {
+		this.RecordList = append(this.RecordList[:1], this.RecordList[1:]...)
+	}
 	this.RecordList = append(this.RecordList, &record)
 	this.BaseStat(5, &record)
 	this.StarsStat(10, &record)
-	this.Print()
+	//	this.Print()
+	this.pushMsg()
 }
 
 //五星统计
@@ -210,17 +215,65 @@ func (this *SSC) Print() {
 	logs.Debug(str)
 }
 func (this *SSC) pushMsg() {
-	BSlimit, ok := GBigSmallLimit[this.Mode]
-	//	OElimit, ok := GOddEvenLimit[this.Mode]
+	BSlimit, _ := GBigSmallLimit[this.Mode]
+	OElimit, _ := GOddEvenLimit[this.Mode]
+	//
 	//	starlimit, ok := GStarsLimit[this.Mode]
-	//	totallimit, ok := GTotalLimit[this.Mode]
+	//
 	//	predlimit, ok := GPredLimit[this.Mode]
-	if ok {
-		for i := 1; i <= len(this.Limit); i++ {
-			v, _ := this.Limit[i]
-			maxVal := lotteryutils.GetMaxValue(v.Big, v.Small)
-			retLst := GetPushMenber(BSlimit, maxVal)
+	for i := 1; i <= len(this.Limit); i++ {
+		v, _ := this.Limit[i]
+		BS_maxVal := lotteryutils.GetMaxValue(v.Big, v.Small)
+		BS_retLst := GetPushMenber(BSlimit, BS_maxVal)
+		if len(BS_retLst) > 0 {
+			msg := fmt.Sprint(this.Name, ":第", i, "球:大已开出", v.Big, "期,小已开出", v.Small, "期")
+			sendMsgToFriend(BS_retLst, msg)
+		}
+		OE_maxVal := lotteryutils.GetMaxValue(v.Odd, v.Even)
+		OE_retLst := GetPushMenber(OElimit, OE_maxVal)
+		if len(OE_retLst) > 0 {
+			msg := fmt.Sprint(this.Name, ":第", i, "球:单已开出", v.Odd, "期,双已开出", v.Even, "期")
+			sendMsgToFriend(OE_retLst, msg)
 		}
 	}
+	total_BS_limit, tok := GTotalBSLimit[this.Mode]
+	if tok {
+		Total_BS_maxVal := lotteryutils.GetMaxValue(this.Total_Limit.Big, this.Total_Limit.Small)
+		Total_BS_retLst := GetPushMenber(total_BS_limit, Total_BS_maxVal)
+		if len(Total_BS_retLst) > 0 {
+			msg := fmt.Sprint(this.Name, ":总和大已开出", this.Total_Limit.Big, "期,总和小已开出", this.Total_Limit.Small, "期")
+			sendMsgToFriend(Total_BS_retLst, msg)
+		}
 
+	}
+	total_OE_limit, oeOk := GTotalOELimit[this.Mode]
+	if oeOk {
+		Total_OE_maxVal := lotteryutils.GetMaxValue(this.Total_Limit.Odd, this.Total_Limit.Even)
+		Total_OE_retLst := GetPushMenber(total_OE_limit, Total_OE_maxVal)
+		if len(Total_OE_retLst) > 0 {
+			msg := fmt.Sprint(this.Name, ":总和单已开出", this.Total_Limit.Odd, "期,总和双已开出", this.Total_Limit.Even, "期")
+			sendMsgToFriend(Total_OE_retLst, msg)
+		}
+	}
+	pred_limit, pok := GPredLimit[this.Mode]
+	if pok {
+		pred_maxVal := lotteryutils.GetMaxValue(this.Pred_Limit.Dragon, this.Pred_Limit.Draw, this.Pred_Limit.Tiger)
+		pred_retLst := GetPushMenber(pred_limit, pred_maxVal)
+		if len(pred_retLst) > 0 {
+			msg := fmt.Sprint(this.Name, ":龙已开出", this.Pred_Limit.Dragon, "期，虎已开出", this.Pred_Limit.Tiger, "期，和已开出", this.Pred_Limit.Draw, "期")
+			sendMsgToFriend(pred_retLst, msg)
+		}
+	}
+	star_limit, sok := GStarsLimit[this.Mode]
+	if sok {
+		for i := 0; i < len(this.Stars); i++ {
+			v, _ := this.Stars[i]
+			star_maxVal := lotteryutils.GetMaxValue(v.Open, v.No)
+			star_retLst := GetPushMenber(star_limit, star_maxVal)
+			if len(star_retLst) > 0 {
+				msg := fmt.Sprint(this.Name, ":号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次")
+				sendMsgToFriend(star_retLst, msg)
+			}
+		}
+	}
 }

@@ -1,5 +1,13 @@
 package utils
 
+import (
+	"fmt"
+	"mycommon/logs"
+	"mycommon/utils"
+	"runtime"
+	"time"
+)
+
 func GetBigSmall(ball int, split int) (int, int) {
 	big := 0
 	small := 0
@@ -71,4 +79,73 @@ func GetMaxValue(retVal ...int) int {
 		}
 	}
 	return maxVal
+}
+
+//判断场次时间是否满足
+func JudgeTime(startTime string, endTime string) bool {
+	flag := true
+
+	//判断开始时间和结束时间
+	if startTime != "" {
+		_at, ok := HMSCompToSys(startTime, false)
+		if ok && _at > 0 {
+			flag = true
+		} else {
+			flag = false
+		}
+	}
+	if endTime != "" {
+		_at, ok := HMSCompToSys(endTime, true)
+		if ok && _at < 0 {
+			flag = true
+		} else {
+			flag = false
+		}
+	}
+	return flag
+}
+
+//传入时间于系统当前时间进行比较 timestr->9:00:00
+func HMSCompToSys(timestr string, dayFlag bool) (int, bool) {
+	defer func() {
+		if e := recover(); e != nil {
+			err, ok := e.(error)
+			if ok {
+				// 日志记录
+				for i := 2; i <= 8; i++ {
+					_, f, line, ok := runtime.Caller(i)
+					if !ok {
+						continue
+					}
+					if i == 2 {
+						logs.Error(i, "__err:[", err, "]__fname:[", f, "]__line:[", line, "]")
+					} else {
+						logs.Error(i, "__fname:[", f, "]__line:[", line, "]")
+					}
+				}
+			}
+		}
+	}()
+	flag := false
+	_at := 0
+	if timestr != "" {
+		timestr = fmt.Sprint(time.Now().Format("2006-01-02"), " ", timestr)
+		fmt.Println(timestr)
+		t := utils.GetTimeFromStr(timestr)
+		if dayFlag {
+			//日期加一天
+			d, _ := time.ParseDuration("24h")
+			t = t.Add(d)
+			//			logs.Debug("timer_", t.Day())
+		}
+		flag = true
+		if time.Now().Unix() >= t.Unix() {
+			_at = 1
+		} else {
+			_at = -1
+		}
+
+	}
+	//	fmt.Println("_at_", _at, "flag", flag)
+	return _at, flag
 }

@@ -62,8 +62,8 @@ const (
 	SEND_MSG_TO_FRIEND_URL = "http://localhost:8080/sendMsgToFr"
 )
 const (
-	CQSSC_START_TIME = "09:00"
-	CQSSC_END_TIME   = "02:00"
-	XJSSC_START_TIME = "09:00"
-	XJSSC_END_TIME   = "02:00"
+	CQSSC_START_TIME = "9:00:00"
+	CQSSC_END_TIME   = "2:00:00"
+	XJSSC_START_TIME = "9:00:00"
+	XJSSC_END_TIME   = "2:00:00"
 )

@@ -13,6 +13,7 @@ import (
 
 	"api.lottery.thirdparty/common"
 	"api.lottery.thirdparty/model"
+	lotteryutils "api.lottery.thirdparty/utils"
 	"github.com/robfig/cron"
 )
 
@@ -62,18 +63,23 @@ func (this *Spider) SpiderCron() {
 
 }
 func (this *Spider) LoardSpider(lordinit int) {
-	if GLotteryAPI.CQSSC.Mode == CQSSC_API_PJ {
-		Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
-		//		logs.Debug("LoardSpider_err", mathstr.GetJsonStr(err))
-	} else if GLotteryAPI.CQSSC.Mode == CQSSC_API_OFFICIAL {
-		Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+	if lotteryutils.JudgeTime(GLotteryAPI.CQSSC.StartTime, GLotteryAPI.CQSSC.EndTime) {
+		if GLotteryAPI.CQSSC.Mode == CQSSC_API_PJ {
+			Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+			//		logs.Debug("LoardSpider_err", mathstr.GetJsonStr(err))
+		} else if GLotteryAPI.CQSSC.Mode == CQSSC_API_OFFICIAL {
+			Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+		}
 	}
-	//	logs.Debug("XJSSC", mathstr.GetJsonStr(GLotteryAPI.XJSSC))
-	if GLotteryAPI.XJSSC.Mode == XJSSC_API_PJ {
-		//		logs.Debug("XJSSC")
-		Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
-	} else if GLotteryAPI.XJSSC.Mode == XJSSC_API_OFFICIAL {
-		Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+	if lotteryutils.JudgeTime(GLotteryAPI.XJSSC.StartTime, GLotteryAPI.XJSSC.EndTime) {
+		if GLotteryAPI.XJSSC.Mode == XJSSC_API_PJ {
+			//		logs.Debug("XJSSC")
+			Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+		} else if GLotteryAPI.XJSSC.Mode == XJSSC_API_OFFICIAL {
+			Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+		}
+	} else {
+		logs.Debug("no in curtime")
 	}
 
 	if lordinit == STATUS_YES {

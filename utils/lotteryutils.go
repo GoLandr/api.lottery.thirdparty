@@ -94,6 +94,9 @@ func JudgeTime(startTime string, endTime string) bool {
 			flag = false
 		}
 	}
+	if startTime > endTime {
+
+	}
 	if endTime != "" {
 		_at, ok := HMSCompToSys(endTime, true)
 		if ok && _at < 0 {

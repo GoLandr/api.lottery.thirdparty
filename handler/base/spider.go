@@ -82,9 +82,28 @@ func (this *Spider) LoardSpider(lordinit int) {
 		logs.Debug("no in curtime")
 	}
 
+	if lotteryutils.JudgeTime(GLotteryAPI.TJSSC.StartTime, GLotteryAPI.TJSSC.EndTime) {
+		if GLotteryAPI.TJSSC.Mode == TJSSC_API_PJ {
+			//		logs.Debug("XJSSC")
+			Pj_SSC(PJ_TJSSC, T_TJSSC, TJSSC_TYPE, lordinit)
+		} else if GLotteryAPI.XJSSC.Mode == XJSSC_API_OFFICIAL {
+			Official_SSC(OFFICIAL_TJSSC, T_TJSSC, TJSSC_TYPE, lordinit)
+		}
+	}
+
+	if lotteryutils.JudgeTime(GLotteryAPI.YNSSC.StartTime, GLotteryAPI.YNSSC.EndTime) {
+		if GLotteryAPI.YNSSC.Mode == YNSSC_API_PJ {
+			//		logs.Debug("XJSSC")
+			Pj_SSC(PJ_YNSSC, T_YNSSC, YNSSC_TYPE, lordinit)
+		} else if GLotteryAPI.YNSSC.Mode == YNSSC_API_OFFICIAL {
+			Official_SSC(OFFICIAL_YNSSC, T_YNSSC, XJSSC_TYPE, lordinit)
+		}
+	}
 	if lordinit == STATUS_YES {
 		GLotteryMgr.Cqssc.LordInit(T_CQSSC, CQSSC_NAME, CQSSC_TYPE)
 		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME, XJSSC_TYPE)
+		GLotteryMgr.Tjssc.LordInit(T_TJSSC, TJSSC_NAME, TJSSC_TYPE)
+		GLotteryMgr.Ynssc.LordInit(T_YNSSC, YNSSC_NAME, YNSSC_TYPE)
 	}
 }
 
@@ -289,18 +308,22 @@ func Pj_BJPK(urlstr string, tablename string, mode int, lordinit int) error {
 }
 
 func SaveLottery(lottery interface{}, mode int, loadRecord int, tablename string) {
-	if mode == CQSSC_TYPE {
+	if mode == CQSSC_TYPE || mode == XJSSC_TYPE ||
+		mode == TJSSC_TYPE || mode == YNSSC_TYPE {
 		ssc := lottery.(model.SSC)
 		SaveSSC(tablename, ssc, mode)
 		if loadRecord == STATUS_YES {
-			GLotteryMgr.Cqssc.AddRecord(ssc)
-		}
-	} else if mode == XJSSC_TYPE {
-		logs.Debug("save_xj")
-		ssc := lottery.(model.SSC)
-		SaveSSC(tablename, ssc, mode)
-		if loadRecord == STATUS_YES {
-			GLotteryMgr.Xjssc.AddRecord(ssc)
+			switch mode {
+			case CQSSC_TYPE:
+				GLotteryMgr.Cqssc.AddRecord(ssc)
+			case XJSSC_TYPE:
+				GLotteryMgr.Xjssc.AddRecord(ssc)
+			case TJSSC_TYPE:
+				GLotteryMgr.Tjssc.AddRecord(ssc)
+			case YNSSC_TYPE:
+				GLotteryMgr.Ynssc.AddRecord(ssc)
+			}
+
 		}
 	}
 }

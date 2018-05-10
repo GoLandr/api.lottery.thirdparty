@@ -17,7 +17,8 @@ func SaveSSC(tablename string, lottery interface{}, mode int) {
 	}()
 	orm := global.GetNewOrm()
 	defer global.CloseOrm(orm)
-	if mode == CQSSC_TYPE || mode == XJSSC_TYPE {
+	if mode == CQSSC_TYPE || mode == XJSSC_TYPE ||
+		mode == TJSSC_TYPE || mode == YNSSC_TYPE {
 		ssc := lottery.(model.SSC)
 		err := orm.SetTable(tablename).SetPK("flowid").InsertModel(ssc)
 		utils.ThrowError(err)

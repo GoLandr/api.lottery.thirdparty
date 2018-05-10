@@ -5,12 +5,17 @@ const (
 	CQSSC_API_OFFICIAL = 2
 	XJSSC_API_PJ       = 1
 	XJSSC_API_OFFICIAL = 2
+	TJSSC_API_PJ       = 1
+	TJSSC_API_OFFICIAL = 2
+	YNSSC_API_PJ       = 1
+	YNSSC_API_OFFICIAL = 2
 )
 const (
 	CQSSC_TYPE = 1 //重庆时时彩
 	XJSSC_TYPE = 2 //新疆时时彩
 	PK_TYPE    = 3 //北京pk
 	TJSSC_TYPE = 4 //天津时时彩
+	YNSSC_TYPE = 5 //云南时时彩
 )
 
 const (
@@ -33,22 +38,26 @@ const (
 const (
 	PJ_CQSSC = "http://www.j0024.com/lottery/getAllCqsscAutoList"
 	PJ_XJSSC = "http://www.j0024.com/lottery/getAllXjsscAutoList"
-	TJ_XJSSC = "http://www.j0024.com/lottery/getAllTjsscAutoList"
+	PJ_TJSSC = "http://www.j0024.com/lottery/getAllTjsscAutoList"
+	PJ_YNSSC = "http://www.j0024.com/lottery/getAllYnsscAutoList"
 )
 const (
 	OFFICIAL_CQSSC = "http://f.apiplus.net/cqssc-20.json"
 	OFFICIAL_XJSSC = "http://f.apiplus.net/xjssc-20.json"
 	OFFICIAL_TJSSC = "http://f.apiplus.net/tjssc-20.json"
+	OFFICIAL_YNSSC = "http://f.apiplus.net/ynssc-20.json"
 )
 const (
 	T_CQSSC = "lottery_cqssc"
 	T_XJSSC = "lottery_xjssc"
 	T_TJSSC = "lottery_tjssc"
+	T_YNSSC = "lottery_ynssc"
 )
 const (
 	CQSSC_NAME = "重庆时时彩"
 	XJSSC_NAME = "新疆时时彩"
 	TJSSC_NAME = "天津时时彩"
+	YNSSC_NAME = "云南时时彩"
 )
 const (
 	SSC_SPLIT       = 5  //大小分界线
@@ -67,17 +76,12 @@ const (
 	SEND_MSG_TO_FRIEND_URL = "http://localhost:8080/sendMsgToFr"
 )
 const (
-<<<<<<< HEAD
-	CQSSC_START_TIME = "09:00"
-	CQSSC_END_TIME   = "02:00"
-	XJSSC_START_TIME = "09:00"
-	XJSSC_END_TIME   = "02:00"
-	TJSSC_START_TIME = "09:00"
-	TJSSC_END_TIME   = "02:00"
-=======
-	CQSSC_START_TIME = "9:00:00"
+	CQSSC_START_TIME = "10:00:00"
 	CQSSC_END_TIME   = "2:00:00"
-	XJSSC_START_TIME = "9:00:00"
+	XJSSC_START_TIME = "10:00:00"
 	XJSSC_END_TIME   = "2:00:00"
->>>>>>> 22c27231b3242c09248139b5b77e679e6829136b
+	TJSSC_START_TIME = "9:00:00"
+	TJSSC_END_TIME   = "23:00:00"
+	YNSSC_START_TIME = "9:30:00"
+	YNSSC_END_TIME   = "22:30:00"
 )

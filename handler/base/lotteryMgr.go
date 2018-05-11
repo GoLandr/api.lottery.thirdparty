@@ -7,4 +7,5 @@ type LotteryMgr struct {
 	Xjssc SSC
 	Tjssc SSC
 	Ynssc SSC
+	Bjpk  bjpk
 }

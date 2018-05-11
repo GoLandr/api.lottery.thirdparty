@@ -68,7 +68,7 @@ func (this *Spider) LoardSpider(lordinit int) {
 			Pj_SSC(PJ_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
 			//		logs.Debug("LoardSpider_err", mathstr.GetJsonStr(err))
 		} else if GLotteryAPI.CQSSC.Mode == CQSSC_API_OFFICIAL {
-			Official_SSC(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
+			Official_spider(OFFICIAL_CQSSC, T_CQSSC, CQSSC_TYPE, lordinit)
 		}
 	}
 	if lotteryutils.JudgeTime(GLotteryAPI.XJSSC.StartTime, GLotteryAPI.XJSSC.EndTime) {
@@ -76,7 +76,7 @@ func (this *Spider) LoardSpider(lordinit int) {
 			//		logs.Debug("XJSSC")
 			Pj_SSC(PJ_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
 		} else if GLotteryAPI.XJSSC.Mode == XJSSC_API_OFFICIAL {
-			Official_SSC(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
+			Official_spider(OFFICIAL_XJSSC, T_XJSSC, XJSSC_TYPE, lordinit)
 		}
 	} else {
 		logs.Debug("no in curtime")
@@ -87,7 +87,7 @@ func (this *Spider) LoardSpider(lordinit int) {
 			//		logs.Debug("XJSSC")
 			Pj_SSC(PJ_TJSSC, T_TJSSC, TJSSC_TYPE, lordinit)
 		} else if GLotteryAPI.XJSSC.Mode == XJSSC_API_OFFICIAL {
-			Official_SSC(OFFICIAL_TJSSC, T_TJSSC, TJSSC_TYPE, lordinit)
+			Official_spider(OFFICIAL_TJSSC, T_TJSSC, TJSSC_TYPE, lordinit)
 		}
 	}
 
@@ -96,7 +96,7 @@ func (this *Spider) LoardSpider(lordinit int) {
 			//		logs.Debug("XJSSC")
 			Pj_SSC(PJ_YNSSC, T_YNSSC, YNSSC_TYPE, lordinit)
 		} else if GLotteryAPI.YNSSC.Mode == YNSSC_API_OFFICIAL {
-			Official_SSC(OFFICIAL_YNSSC, T_YNSSC, XJSSC_TYPE, lordinit)
+			Official_spider(OFFICIAL_YNSSC, T_YNSSC, XJSSC_TYPE, lordinit)
 		}
 	}
 	if lordinit == STATUS_YES {
@@ -107,14 +107,14 @@ func (this *Spider) LoardSpider(lordinit int) {
 	}
 }
 
-type SSCModel struct {
+type OfficialModel struct {
 	Expect        string `json:"expect"`
 	Opencode      string `json:"opencode"`
 	Opentime      string `json:"opentime"`
 	Opentimestamp int    `json:"opentimestamp"`
 }
 
-func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error {
+func Official_spider(urlstr string, tablename string, mode int, lordinit int) error {
 	log.Println("visit Official_SSC")
 	defer func() {
 		if e := recover(); e != nil {
@@ -132,35 +132,64 @@ func Official_SSC(urlstr string, tablename string, mode int, lordinit int) error
 	var redata map[string]interface{}
 	mathstr.JsonUnmarsh(result, &redata)
 	//	log.Println(result)
-	var hmlist []SSCModel
+	var hmlist []OfficialModel
 	mathstr.JsonUnmarsh(mathstr.GetJsonPlainStr(redata["data"]), &hmlist)
 	//	fmt.Println("hmlist_2_", hmlist)
 	for _, v := range hmlist {
-		havecount := CheckLottery(tablename, v.Expect)
+		flowid := v.Expect
+		if mode == BJPK_TYPE {
+			flowid = fmt.Sprint(utils.NowTimeObj().Year(), v.Expect)
+		}
+		havecount := CheckLottery(tablename, flowid)
 		if havecount == 0 {
 			log.Println("save_", tablename, "_Expect", v.Expect, "_time_", v.Opentime)
 			//保存
-			ssc := model.SSC{}
-			ssc.Flowid = mathstr.Math2intDefault0(v.Expect)
-			ball := strings.Split(v.Opencode, ",")
-			ssc.One_ball = mathstr.Math2intDefault0(ball[0])
-			ssc.Two_ball = mathstr.Math2intDefault0(ball[1])
-			ssc.Third_ball = mathstr.Math2intDefault0(ball[2])
-			ssc.Four_ball = mathstr.Math2intDefault0(ball[3])
-			ssc.Five_ball = mathstr.Math2intDefault0(ball[4])
-			ssc.Periods = v.Expect[8:len(v.Expect)]
-			ssc.Update_date = utils.Now()
-			ssc.Lottery_date = v.Opentime[0:10]
-			ssc.Lottery_time = v.Opentime[11:len(v.Opentime)]
+			resData := Official_SSC(v)
 			//			log.Println(ssc.Lottery_date, "_", ssc.Lottery_time)
 			if lordinit == STATUS_YES {
-				SaveLottery(ssc, mode, STATUS_NO, tablename)
+				SaveLottery(resData, mode, STATUS_NO, tablename)
 			} else {
-				SaveLottery(ssc, mode, STATUS_YES, tablename)
+				SaveLottery(resData, mode, STATUS_YES, tablename)
 			}
 		}
 	}
 	return nil
+}
+
+func Official_SSC(data OfficialModel) interface{} {
+	ssc := model.SSC{}
+	ssc.Flowid = mathstr.Math2intDefault0(data.Expect)
+	ball := strings.Split(data.Opencode, ",")
+	ssc.One_ball = mathstr.Math2intDefault0(ball[0])
+	ssc.Two_ball = mathstr.Math2intDefault0(ball[1])
+	ssc.Third_ball = mathstr.Math2intDefault0(ball[2])
+	ssc.Four_ball = mathstr.Math2intDefault0(ball[3])
+	ssc.Five_ball = mathstr.Math2intDefault0(ball[4])
+	ssc.Periods = data.Expect[8:len(data.Expect)]
+	ssc.Update_date = utils.Now()
+	ssc.Lottery_date = data.Opentime[0:10]
+	ssc.Lottery_time = data.Opentime[11:len(data.Opentime)]
+	return ssc
+}
+func Official_BJPK(data OfficialModel) interface{} {
+	resData := model.BJPK{}
+	resData.Flowid = mathstr.Math2intDefault0(fmt.Sprint(utils.NowTimeObj().Year(), data.Expect))
+	ball := strings.Split(data.Opencode, ",")
+	resData.One_ball = mathstr.Math2intDefault0(ball[0])
+	resData.Two_ball = mathstr.Math2intDefault0(ball[1])
+	resData.Third_ball = mathstr.Math2intDefault0(ball[2])
+	resData.Four_ball = mathstr.Math2intDefault0(ball[3])
+	resData.Five_ball = mathstr.Math2intDefault0(ball[4])
+	resData.Six_ball = mathstr.Math2intDefault0(ball[5])
+	resData.Seven_ball = mathstr.Math2intDefault0(ball[6])
+	resData.Eight_ball = mathstr.Math2intDefault0(ball[7])
+	resData.Ninth_ball = mathstr.Math2intDefault0(ball[8])
+	resData.Ten_ball = mathstr.Math2intDefault0(ball[9])
+	resData.Periods = data.Expect
+	resData.Update_date = utils.Now()
+	resData.Lottery_date = data.Opentime[0:10]
+	resData.Lottery_time = data.Opentime[11:len(data.Opentime)]
+	return resData
 }
 
 //PJSSC

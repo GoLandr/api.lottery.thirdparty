@@ -54,14 +54,13 @@ func GetTotalStat(ball []int, split int) (int, int, int, int) {
 
 //龙虎统计
 func GetPredStat(first_ball int, second_ball int, dragon int, tiger int, draw int) (int, int, int) {
-
 	if first_ball > second_ball {
-		tiger += 1
-		dragon = 0
-		draw = 0
-	} else if first_ball < second_ball {
 		dragon += 1
 		tiger = 0
+		draw = 0
+	} else if first_ball < second_ball {
+		tiger += 1
+		dragon = 0
 		draw = 0
 	} else {
 		draw += 1
@@ -94,11 +93,13 @@ func JudgeTime(startTime string, endTime string) bool {
 			flag = false
 		}
 	}
-	if startTime > endTime {
-
+	dayFlag := false
+	if endTime > startTime {
+		dayFlag = true
 	}
+	//	logs.Debug("startTime_", startTime, "_endTime_", endTime, "_ss_", ss)
 	if endTime != "" {
-		_at, ok := HMSCompToSys(endTime, true)
+		_at, ok := HMSCompToSys(endTime, dayFlag)
 		if ok && _at < 0 {
 			flag = true
 		} else {

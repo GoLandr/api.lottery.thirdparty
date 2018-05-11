@@ -9,11 +9,13 @@ const (
 	TJSSC_API_OFFICIAL = 2
 	YNSSC_API_PJ       = 1
 	YNSSC_API_OFFICIAL = 2
+	BJPK_API_PJ        = 1
+	BJPK_API_OFFICIAL  = 2
 )
 const (
 	CQSSC_TYPE = 1 //重庆时时彩
 	XJSSC_TYPE = 2 //新疆时时彩
-	PK_TYPE    = 3 //北京pk
+	BJPK_TYPE  = 3 //北京pk
 	TJSSC_TYPE = 4 //天津时时彩
 	YNSSC_TYPE = 5 //云南时时彩
 )
@@ -40,29 +42,34 @@ const (
 	PJ_XJSSC = "http://www.j0024.com/lottery/getAllXjsscAutoList"
 	PJ_TJSSC = "http://www.j0024.com/lottery/getAllTjsscAutoList"
 	PJ_YNSSC = "http://www.j0024.com/lottery/getAllYnsscAutoList"
+	PJ_BJPK  = "http://www.j0024.com/lottery/getAllBjpkAutoList"
 )
 const (
 	OFFICIAL_CQSSC = "http://f.apiplus.net/cqssc-20.json"
 	OFFICIAL_XJSSC = "http://f.apiplus.net/xjssc-20.json"
 	OFFICIAL_TJSSC = "http://f.apiplus.net/tjssc-20.json"
 	OFFICIAL_YNSSC = "http://f.apiplus.net/ynssc-20.json"
+	OFFICIAL_BJPK  = "http://f.apiplus.net/bjpk10-20.json"
 )
 const (
 	T_CQSSC = "lottery_cqssc"
 	T_XJSSC = "lottery_xjssc"
 	T_TJSSC = "lottery_tjssc"
 	T_YNSSC = "lottery_ynssc"
+	T_BJPK  = "lottery_bjpk"
 )
 const (
 	CQSSC_NAME = "重庆时时彩"
 	XJSSC_NAME = "新疆时时彩"
 	TJSSC_NAME = "天津时时彩"
 	YNSSC_NAME = "云南时时彩"
+	BJPK_NAME  = "北京pk"
 )
 const (
 	SSC_SPLIT       = 5  //大小分界线
 	SSC_TOTAL_SPLIT = 23 //总和大小分界线
 	BJKL8_SPLIT     = 6  //大小分界线
+	BJPK_SPLIT      = 6
 )
 
 const (
@@ -84,4 +91,6 @@ const (
 	TJSSC_END_TIME   = "23:00:00"
 	YNSSC_START_TIME = "9:30:00"
 	YNSSC_END_TIME   = "22:30:00"
+	BJPK_START_TIME  = "9:00:00"
+	BJPK_END_TIME    = "23:59:59"
 )

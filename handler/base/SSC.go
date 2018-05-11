@@ -76,7 +76,7 @@ func (this *SSC) AddRecord(record model.SSC) {
 	this.RecordList = append(this.RecordList, &record)
 	this.BaseStat(5, &record)
 	this.StarsStat(10, &record)
-	//	this.Print()
+	this.Print()
 	this.pushMsg()
 }
 

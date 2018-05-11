@@ -66,10 +66,11 @@ const (
 	BJPK_NAME  = "北京pk"
 )
 const (
-	SSC_SPLIT       = 5  //大小分界线
-	SSC_TOTAL_SPLIT = 23 //总和大小分界线
-	BJKL8_SPLIT     = 6  //大小分界线
-	BJPK_SPLIT      = 6
+	SSC_SPLIT        = 5  //大小分界线
+	SSC_TOTAL_SPLIT  = 23 //总和大小分界线
+	BJKL8_SPLIT      = 6  //大小分界线
+	BJPK_SPLIT       = 6
+	BJPK_TOTAL_SPLIT = 12 //总和大小分界线
 )
 
 const (

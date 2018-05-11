@@ -103,7 +103,7 @@ func (this *Spider) LoardSpider(lordinit int) {
 	if lotteryutils.JudgeTime(GLotteryAPI.BJPK.StartTime, GLotteryAPI.BJPK.EndTime) {
 		if GLotteryAPI.BJPK.Mode == BJPK_API_PJ {
 			//		logs.Debug("XJSSC")
-			Pj_SSC(PJ_BJPK, T_BJPK, BJPK_TYPE, lordinit)
+			Pj_BJPK(PJ_BJPK, T_BJPK, BJPK_TYPE, lordinit)
 		} else if GLotteryAPI.BJPK.Mode == BJPK_API_OFFICIAL {
 			Official_spider(OFFICIAL_BJPK, T_BJPK, BJPK_TYPE, lordinit)
 		}
@@ -125,7 +125,6 @@ type OfficialModel struct {
 }
 
 func Official_spider(urlstr string, tablename string, mode int, lordinit int) error {
-	log.Println("visit Official_spider")
 	defer func() {
 		if e := recover(); e != nil {
 			logs.Debug("Fail to collect and replace the source")
@@ -213,7 +212,6 @@ func Official_BJPK(data OfficialModel) interface{} {
 func Pj_SSC(urlstr string, tablename string, mode int, lordinit int) error {
 	//	log.Println("visit Pj_SSC_mode", mode, "_", tablename)
 	defer func() {
-		logs.Debug("visit defer")
 		if e := recover(); e != nil {
 			logs.Debug("Fail to collect and replace the source")
 			ChangeLotteryAPI(mode)
@@ -300,13 +298,14 @@ func Pj_BJPK(urlstr string, tablename string, mode int, lordinit int) error {
 		fmt.Println("hmlist_2_", hmlist)
 		for k, v := range hmlist {
 			//			fmt.Println("k_", k, "ball_", strings.Split(v, ","))
-			havecount := CheckLottery(tablename, k)
+			flowid := mathstr.Math2intDefault0(fmt.Sprint(utils.NowTimeObj().Year(), k))
+			havecount := CheckLottery(tablename, fmt.Sprint(flowid))
 			if havecount == 0 {
 				v = strings.Replace(v, "<br>", ",", 1)
 				logs.Debug("v_", v)
 				//保存
 				bjpk := model.BJPK{}
-				bjpk.Flowid = mathstr.Math2intDefault0(k)
+				bjpk.Flowid = flowid
 				ball := strings.Split(v, ",")
 				bjpk.One_ball = mathstr.Math2intDefault0(ball[0])
 				bjpk.Two_ball = mathstr.Math2intDefault0(ball[1])
@@ -328,10 +327,12 @@ func Pj_BJPK(urlstr string, tablename string, mode int, lordinit int) error {
 	} else {
 		//最新记录
 		bjpk := model.BJPK{}
-		bjpk.Flowid = mathstr.Math2intDefault0(redata["numbers"])
+		flowid := mathstr.Math2intDefault0(fmt.Sprint(utils.NowTimeObj().Year(), redata["numbers"]))
+		bjpk.Flowid = flowid
 		var ball []string
 		mathstr.JsonUnmarsh(fmt.Sprint(mathstr.GetJsonPlainStr(redata["hm"])), &ball)
 		bjpk.One_ball = mathstr.Math2intDefault0(ball[0])
+		bjpk.Two_ball = mathstr.Math2intDefault0(ball[1])
 		bjpk.Third_ball = mathstr.Math2intDefault0(ball[2])
 		bjpk.Four_ball = mathstr.Math2intDefault0(ball[3])
 		bjpk.Five_ball = mathstr.Math2intDefault0(ball[4])
@@ -343,10 +344,8 @@ func Pj_BJPK(urlstr string, tablename string, mode int, lordinit int) error {
 		bjpk.Periods = fmt.Sprint(redata["numbers"])
 		bjpk.Update_date = utils.Now()
 		//		ssc.Lottery_date = t_flowid[0:8]
-		havecount := CheckLottery(tablename, bjpk.Periods)
+		havecount := CheckLottery(tablename, fmt.Sprint(flowid))
 		if havecount == 0 {
-			//			SaveSSC(ssc)
-			//			GLotteryMgr.Cqssc.AddRecord(ssc)
 			SaveLottery(bjpk, mode, STATUS_YES, tablename)
 		}
 	}

@@ -2,8 +2,8 @@ package base
 
 import (
 	"fmt"
-	"log"
 	"mycommon/logs"
+	"mycommon/mathstr"
 	"mycommon/utils"
 	"sort"
 
@@ -36,7 +36,6 @@ type BJPK struct {
 }
 
 func (this *BJPK) LordInit(tablename string, lotteryName string, mode int) {
-	log.Println("BJPK_LordInit")
 	this.Name = lotteryName
 	this.Mode = mode
 
@@ -70,12 +69,13 @@ func (this *BJPK) AddRecord(record model.BJPK) {
 		this.RecordList = append(this.RecordList[:1], this.RecordList[1:]...)
 	}
 	this.RecordList = append(this.RecordList, &record)
-	this.BaseStat(5, &record)
+	this.BaseStat(10, &record)
 	this.Print()
 	this.pushMsg()
 }
 
 func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
+	//	logs.Debug("record_", mathstr.GetJsonPlainStr(record))
 	if this.Limit == nil {
 		this.Limit = make(map[int]*model.Limit)
 		for i := 1; i <= ballSize; i++ {
@@ -88,7 +88,7 @@ func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
 		small := 0
 		odd := 0
 		even := 0
-
+		//		k = k + 1
 		if k == ONE_BALL {
 			big, small = lotteryutils.GetBigSmall(record.One_ball, BJPK_SPLIT)
 			odd, even = lotteryutils.GetOddEven(record.One_ball)
@@ -141,7 +141,7 @@ func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
 	total_odd := 0
 	total_even := 0
 	total_big := 0
-	total_odd, total_even, total_big, total_small = lotteryutils.GetTotalStat(this.recordToArray(record), SSC_TOTAL_SPLIT)
+	total_odd, total_even, total_big, total_small = lotteryutils.GetTotalStat(this.recordToArray(record), BJPK_TOTAL_SPLIT)
 	if total_big == 1 {
 		this.Total_Limit.Big += total_big
 		this.Total_Limit.Small = 0
@@ -158,7 +158,10 @@ func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
 	}
 	//计算龙虎
 	if this.Pred_Limit == nil {
-		this.Pred_Limit = make([]*model.PredLimt, ballSize/2)
+		for i := 0; i < ballSize/2; i++ {
+			predLimit := new(model.PredLimt)
+			this.Pred_Limit = append(this.Pred_Limit, predLimit)
+		}
 	}
 	for k, v := range this.Pred_Limit {
 		dragon := 0
@@ -184,6 +187,7 @@ func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
 		v.Tiger = tiger
 		v.Draw = draw
 	}
+	logs.Debug("this.Pred_Limit", mathstr.GetJsonPlainStr(this.Pred_Limit))
 }
 
 func (this *BJPK) recordToArray(record *model.BJPK) []int {
@@ -203,6 +207,7 @@ func (this *BJPK) Print() {
 	}
 	str = fmt.Sprint(str, "冠亚大已开出", this.Total_Limit.Big, "期，冠亚小已开出", this.Total_Limit.Small, "期\n")
 	str = fmt.Sprint(str, "冠亚单已开出", this.Total_Limit.Odd, "期，冠亚双已开出", this.Total_Limit.Even, "期\n")
+	logs.Debug("this.Pred_Limit", mathstr.GetJsonPlainStr(this.Pred_Limit))
 	for k, v := range this.Pred_Limit {
 		str = fmt.Sprint(str, "第", k+1, "名：龙已开出", v.Dragon, "期，虎已开出", v.Tiger, "期\n")
 	}

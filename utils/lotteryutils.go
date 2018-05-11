@@ -134,7 +134,7 @@ func HMSCompToSys(timestr string, dayFlag bool) (int, bool) {
 	_at := 0
 	if timestr != "" {
 		timestr = fmt.Sprint(time.Now().Format("2006-01-02"), " ", timestr)
-		fmt.Println(timestr)
+		//		fmt.Println(timestr)
 		t := utils.GetTimeFromStr(timestr)
 		if dayFlag {
 			//日期加一天

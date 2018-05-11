@@ -96,7 +96,16 @@ func (this *Spider) LoardSpider(lordinit int) {
 			//		logs.Debug("XJSSC")
 			Pj_SSC(PJ_YNSSC, T_YNSSC, YNSSC_TYPE, lordinit)
 		} else if GLotteryAPI.YNSSC.Mode == YNSSC_API_OFFICIAL {
-			Official_spider(OFFICIAL_YNSSC, T_YNSSC, XJSSC_TYPE, lordinit)
+			Official_spider(OFFICIAL_YNSSC, T_YNSSC, YNSSC_TYPE, lordinit)
+		}
+	}
+	//bjpk
+	if lotteryutils.JudgeTime(GLotteryAPI.BJPK.StartTime, GLotteryAPI.BJPK.EndTime) {
+		if GLotteryAPI.BJPK.Mode == BJPK_API_PJ {
+			//		logs.Debug("XJSSC")
+			Pj_SSC(PJ_BJPK, T_BJPK, BJPK_TYPE, lordinit)
+		} else if GLotteryAPI.BJPK.Mode == BJPK_API_OFFICIAL {
+			Official_spider(OFFICIAL_BJPK, T_BJPK, BJPK_TYPE, lordinit)
 		}
 	}
 	if lordinit == STATUS_YES {
@@ -104,6 +113,7 @@ func (this *Spider) LoardSpider(lordinit int) {
 		GLotteryMgr.Xjssc.LordInit(T_XJSSC, XJSSC_NAME, XJSSC_TYPE)
 		GLotteryMgr.Tjssc.LordInit(T_TJSSC, TJSSC_NAME, TJSSC_TYPE)
 		GLotteryMgr.Ynssc.LordInit(T_YNSSC, YNSSC_NAME, YNSSC_TYPE)
+		GLotteryMgr.Bjpk.LordInit(T_BJPK, BJPK_NAME, BJPK_TYPE)
 	}
 }
 
@@ -115,7 +125,7 @@ type OfficialModel struct {
 }
 
 func Official_spider(urlstr string, tablename string, mode int, lordinit int) error {
-	log.Println("visit Official_SSC")
+	log.Println("visit Official_spider")
 	defer func() {
 		if e := recover(); e != nil {
 			logs.Debug("Fail to collect and replace the source")
@@ -143,8 +153,14 @@ func Official_spider(urlstr string, tablename string, mode int, lordinit int) er
 		havecount := CheckLottery(tablename, flowid)
 		if havecount == 0 {
 			log.Println("save_", tablename, "_Expect", v.Expect, "_time_", v.Opentime)
+			var resData interface{}
 			//保存
-			resData := Official_SSC(v)
+			if mode == CQSSC_TYPE || mode == XJSSC_TYPE ||
+				mode == TJSSC_TYPE || mode == YNSSC_TYPE {
+				resData = Official_SSC(v)
+			} else if mode == BJPK_TYPE {
+				resData = Official_BJPK(v)
+			}
 			//			log.Println(ssc.Lottery_date, "_", ssc.Lottery_time)
 			if lordinit == STATUS_YES {
 				SaveLottery(resData, mode, STATUS_NO, tablename)
@@ -189,6 +205,7 @@ func Official_BJPK(data OfficialModel) interface{} {
 	resData.Update_date = utils.Now()
 	resData.Lottery_date = data.Opentime[0:10]
 	resData.Lottery_time = data.Opentime[11:len(data.Opentime)]
+	//	logs.Debug("bjpk_", mathstr.GetJsonPlainStr(resData))
 	return resData
 }
 
@@ -354,6 +371,10 @@ func SaveLottery(lottery interface{}, mode int, loadRecord int, tablename string
 			}
 
 		}
+	} else if mode == BJPK_TYPE {
+		bjpk := lottery.(model.BJPK)
+		SaveSSC(tablename, bjpk, mode)
+		GLotteryMgr.Bjpk.AddRecord(bjpk)
 	}
 }
 

@@ -5,8 +5,9 @@ import (
 	"log"
 	"mycommon/logs"
 	"mycommon/utils"
-	"nn/global"
 	"sort"
+
+	"api.lottery.thirdparty/global"
 
 	"api.lottery.thirdparty/model"
 	lotteryutils "api.lottery.thirdparty/utils"
@@ -30,7 +31,7 @@ type BJPK struct {
 	RecordList  []*model.BJPK
 	Limit       map[int]*model.Limit
 	Total_Limit model.Limit //总和
-	Pred_Limit  model.PredLimt
+	Pred_Limit  []*model.PredLimt
 	Mode        int //类型
 }
 
@@ -70,7 +71,6 @@ func (this *BJPK) AddRecord(record model.BJPK) {
 	}
 	this.RecordList = append(this.RecordList, &record)
 	this.BaseStat(5, &record)
-	this.StarsStat(10, &record)
 	this.Print()
 	this.pushMsg()
 }
@@ -157,11 +157,33 @@ func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
 		this.Total_Limit.Odd = 0
 	}
 	//计算龙虎
-	dragon, tiger, draw := lotteryutils.GetPredStat(record.One_ball, record.Five_ball,
-		this.Pred_Limit.Dragon, this.Pred_Limit.Tiger, this.Pred_Limit.Draw)
-	this.Pred_Limit.Dragon = dragon
-	this.Pred_Limit.Tiger = tiger
-	this.Pred_Limit.Draw = draw
+	if this.Pred_Limit == nil {
+		this.Pred_Limit = make([]*model.PredLimt, ballSize/2)
+	}
+	for k, v := range this.Pred_Limit {
+		dragon := 0
+		tiger := 0
+		draw := 0
+		if k == 0 {
+			dragon, tiger, draw = lotteryutils.GetPredStat(record.One_ball, record.Ten_ball,
+				v.Dragon, v.Tiger, v.Draw)
+		} else if k == 1 {
+			dragon, tiger, draw = lotteryutils.GetPredStat(record.Two_ball, record.Ninth_ball,
+				v.Dragon, v.Tiger, v.Draw)
+		} else if k == 2 {
+			dragon, tiger, draw = lotteryutils.GetPredStat(record.Third_ball, record.Eight_ball,
+				v.Dragon, v.Tiger, v.Draw)
+		} else if k == 3 {
+			dragon, tiger, draw = lotteryutils.GetPredStat(record.Four_ball, record.Seven_ball,
+				v.Dragon, v.Tiger, v.Draw)
+		} else if k == 4 {
+			dragon, tiger, draw = lotteryutils.GetPredStat(record.Five_ball, record.Six_ball,
+				v.Dragon, v.Tiger, v.Draw)
+		}
+		v.Dragon = dragon
+		v.Tiger = tiger
+		v.Draw = draw
+	}
 }
 
 func (this *BJPK) recordToArray(record *model.BJPK) []int {
@@ -171,7 +193,7 @@ func (this *BJPK) recordToArray(record *model.BJPK) []int {
 	return array
 }
 
-func (this *SSC) Print() {
+func (this *BJPK) Print() {
 	str := fmt.Sprint(this.Name, "\n")
 
 	for i := 1; i <= len(this.Limit); i++ {
@@ -179,16 +201,14 @@ func (this *SSC) Print() {
 		str = fmt.Sprint(str, "第", i, "球:大已开出", v.Big, "期,小已开出",
 			v.Small, "期,单已开出", v.Odd, "期,双已开出", v.Even, "期", "\n")
 	}
-	str = fmt.Sprint(str, "总和大已开出", this.Total_Limit.Big, "期，总和小已开出", this.Total_Limit.Small, "期\n")
-	str = fmt.Sprint(str, "总和单已开出", this.Total_Limit.Odd, "期，总和双已开出", this.Total_Limit.Even, "期\n")
-	str = fmt.Sprint(str, "龙已开出", this.Pred_Limit.Dragon, "期，虎已开出", this.Pred_Limit.Tiger, "期，和已开出", this.Pred_Limit.Draw, "期\n")
-	for i := 0; i < len(this.Stars); i++ {
-		v, _ := this.Stars[i]
-		str = fmt.Sprint(str, "号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次", "\n")
+	str = fmt.Sprint(str, "冠亚大已开出", this.Total_Limit.Big, "期，冠亚小已开出", this.Total_Limit.Small, "期\n")
+	str = fmt.Sprint(str, "冠亚单已开出", this.Total_Limit.Odd, "期，冠亚双已开出", this.Total_Limit.Even, "期\n")
+	for k, v := range this.Pred_Limit {
+		str = fmt.Sprint(str, "第", k+1, "名：龙已开出", v.Dragon, "期，虎已开出", v.Tiger, "期\n")
 	}
 	logs.Debug(str)
 }
-func (this *SSC) pushMsg() {
+func (this *BJPK) pushMsg() {
 	BSlimit, _ := GBigSmallLimit[this.Mode]
 	OElimit, _ := GOddEvenLimit[this.Mode]
 	//
@@ -215,7 +235,7 @@ func (this *SSC) pushMsg() {
 		Total_BS_maxVal := lotteryutils.GetMaxValue(this.Total_Limit.Big, this.Total_Limit.Small)
 		Total_BS_retLst := GetPushMenber(total_BS_limit, Total_BS_maxVal)
 		if len(Total_BS_retLst) > 0 {
-			msg := fmt.Sprint(this.Name, ":总和大已开出", this.Total_Limit.Big, "期,总和小已开出", this.Total_Limit.Small, "期")
+			msg := fmt.Sprint(this.Name, ":冠亚大已开出", this.Total_Limit.Big, "期,冠亚小已开出", this.Total_Limit.Small, "期")
 			sendMsgToFriend(Total_BS_retLst, msg)
 		}
 
@@ -225,29 +245,20 @@ func (this *SSC) pushMsg() {
 		Total_OE_maxVal := lotteryutils.GetMaxValue(this.Total_Limit.Odd, this.Total_Limit.Even)
 		Total_OE_retLst := GetPushMenber(total_OE_limit, Total_OE_maxVal)
 		if len(Total_OE_retLst) > 0 {
-			msg := fmt.Sprint(this.Name, ":总和单已开出", this.Total_Limit.Odd, "期,总和双已开出", this.Total_Limit.Even, "期")
+			msg := fmt.Sprint(this.Name, ":冠亚单已开出", this.Total_Limit.Odd, "期,冠亚双已开出", this.Total_Limit.Even, "期")
 			sendMsgToFriend(Total_OE_retLst, msg)
 		}
 	}
 	pred_limit, pok := GPredLimit[this.Mode]
 	if pok {
-		pred_maxVal := lotteryutils.GetMaxValue(this.Pred_Limit.Dragon, this.Pred_Limit.Draw, this.Pred_Limit.Tiger)
-		pred_retLst := GetPushMenber(pred_limit, pred_maxVal)
-		if len(pred_retLst) > 0 {
-			msg := fmt.Sprint(this.Name, ":龙已开出", this.Pred_Limit.Dragon, "期，虎已开出", this.Pred_Limit.Tiger, "期，和已开出", this.Pred_Limit.Draw, "期")
-			sendMsgToFriend(pred_retLst, msg)
-		}
-	}
-	star_limit, sok := GStarsLimit[this.Mode]
-	if sok {
-		for i := 0; i < len(this.Stars); i++ {
-			v, _ := this.Stars[i]
-			star_maxVal := lotteryutils.GetMaxValue(v.Open, v.No)
-			star_retLst := GetPushMenber(star_limit, star_maxVal)
-			if len(star_retLst) > 0 {
-				msg := fmt.Sprint(this.Name, ":号码", i, "未出次数", v.No, "次 已出次数", v.Open, "次")
-				sendMsgToFriend(star_retLst, msg)
+		for k, v := range this.Pred_Limit {
+			pred_maxVal := lotteryutils.GetMaxValue(v.Dragon, v.Tiger)
+			pred_retLst := GetPushMenber(pred_limit, pred_maxVal)
+			if len(pred_retLst) > 0 {
+				msg := fmt.Sprint(this.Name, "第", k+1, ":龙已开出", v.Dragon, "期，虎已开出", v.Tiger, "期")
+				sendMsgToFriend(pred_retLst, msg)
 			}
 		}
+
 	}
 }

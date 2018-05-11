@@ -2,6 +2,7 @@ package base
 
 import (
 	"fmt"
+	"mycommon/logs"
 	"mycommon/utils"
 	"net/url"
 
@@ -35,6 +36,7 @@ func CheckValid(valid_data string) bool {
 	return flag
 }
 func sendMsgToFriend(retLst []int, msg string) {
+	logs.Debug("sendMsgToFriend_", msg, "_retLst_", retLst)
 	for _, v := range retLst {
 		param := make(url.Values)
 		param.Add("key", "123456")

@@ -22,6 +22,10 @@ func SaveSSC(tablename string, lottery interface{}, mode int) {
 		ssc := lottery.(model.SSC)
 		err := orm.SetTable(tablename).SetPK("flowid").InsertModel(ssc)
 		utils.ThrowError(err)
+	} else if mode == BJPK_TYPE {
+		bjpk := lottery.(model.BJPK)
+		err := orm.SetTable(tablename).SetPK("flowid").InsertModel(bjpk)
+		utils.ThrowError(err)
 	}
 
 }

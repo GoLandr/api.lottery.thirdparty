@@ -289,13 +289,13 @@ func Pj_BJPK(urlstr string, tablename string, mode int, lordinit int) error {
 	}
 	var redata map[string]interface{}
 	mathstr.JsonUnmarsh(result, &redata)
-	fmt.Println(redata)
+	//	fmt.Println(redata)
 	//	fmt.Println("hmlist_", mathstr.GetJsonPlainStr(redata["hmlist"]))
 	if lordinit == STATUS_YES {
 		//查看历史记录是否保存
 		var hmlist map[string]string
 		mathstr.JsonUnmarsh(mathstr.GetJsonPlainStr(redata["hmlist"]), &hmlist)
-		fmt.Println("hmlist_2_", hmlist)
+		//		fmt.Println("hmlist_2_", hmlist)
 		for k, v := range hmlist {
 			//			fmt.Println("k_", k, "ball_", strings.Split(v, ","))
 			flowid := mathstr.Math2intDefault0(fmt.Sprint(utils.NowTimeObj().Year(), k))

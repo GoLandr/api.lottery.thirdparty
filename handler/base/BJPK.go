@@ -187,7 +187,6 @@ func (this *BJPK) BaseStat(ballSize int, record *model.BJPK) {
 		v.Tiger = tiger
 		v.Draw = draw
 	}
-	logs.Debug("this.Pred_Limit", mathstr.GetJsonPlainStr(this.Pred_Limit))
 }
 
 func (this *BJPK) recordToArray(record *model.BJPK) []int {
